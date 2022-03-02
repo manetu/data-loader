@@ -1,14 +1,15 @@
 # data-loader
 
-A command-line tool to load attribute data, at scale, into the Manetu platform.  This tool emulates the basic functions of a connector, but in a manner designed to facilitate testing.  The basic premise is that a JSON file can be utilized to define a set of customers such as one may find in an enterprise store (e.g. Salesforce, Outlook, etc), and this tool can drive various operations into the Manetu control plane based on this data.
+The Manetu data-loader is a command-line tool to load and verify RDF-based attribute data, at scale, into the Manetu platform.  This tool emulates the essential functions of a Manetu data connector intended to facilitate testing.  The basic premise is that a user expresses a set of PII data in JSON or CSV format, and the tool provides various operations on this data, such as onboarding, verifying, and deleting vaults.
 
 ## Basic features
 
-Based on an input .json file with 1 or more PII definitions, users of this tool may operate in one of three modes:
+Based on an input .json file with one or more PII definitions, users of this tool may operate in one of four modes:
 
 1. **create-vaults**: Create a vault for each user, based on a hash of the email address
 2. **load-attributes**: Load attributes into the vault, based on the Person schema
 3. **delete-attributes**: Delete all attributes from the vault
+4. **onboard**: Simultaneously create vaults and load attributes.
 
 ## Building
 
@@ -43,11 +44,11 @@ Options:
   -m, --mode MODE          :load-attributes              Select the mode from: [load-attributes, delete-attributes, create-vaults]
 ```
 
-The parameters '--url --tls --provider --email --password' are all related to the context of the caller and the environment they are targetting.
+The parameters '--url --tls --provider --email --password' are all related to the caller's context and the environment they are targetting.
 
 '--mode' and the <file.json> input relate to the operation that the tool will perform.
 
-Each row in the <file.json> will create 1 parallel GRPC to the server, simultaneously.  The system will measure time and report the status of each GRPC as they are returned.
+Each row in the <file.json> will create parallel GRPCs to the server.  The system will measure time and report the status of each response.
 
 ### Example
 
@@ -61,4 +62,3 @@ $ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 -e real
 
 ```
 $ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 -e realm-admin@mockprovider.com -p test --provider mockprovider.com -m load-attributes sample-data/mock-data-100.json
-```
