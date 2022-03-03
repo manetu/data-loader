@@ -13,12 +13,24 @@ Based on an input .json file with one or more PII definitions, users of this too
 3. **delete-attributes**: Delete all attributes from the vault
 4. **onboard**: Simultaneously create vaults and load attributes.
 
+## Installing
+
+### Prerequisites
+
+- JRE
+
+``` shell
+sudo wget https://github.com/manetu/data-loader/releases/download/v1.0.0/manetu-data-loader -O /usr/local/bin/manetu-data-loader
+sudo chmod +x /usr/local/bin/manetu-data-loader
+```
+
 ## Building
 
 ### Prerequisites
 
+In addition to the requirements for installation, you will also need:
+
 - Leiningen
-- JRE
 
 ```
 $ make
