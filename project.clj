@@ -1,4 +1,4 @@
-(defproject manetu/data-loader "0.1.0"
+(defproject manetu/data-loader "1.0.0"
   :description "A utility to load and verify data on the Manetu Platform"
   :url "https://github.com/manetu/data-loader"
   :plugins [[lein-cljfmt "0.8.0"]
