@@ -6,6 +6,7 @@
 
 (def command-map
   {:create-vaults     mutate/create-vault
+   :delete-vaults     mutate/delete-vault
    :load-attributes   mutate/load-attributes
    :onboard           mutate/onboard
    :delete-attributes mutate/delete-attributes
