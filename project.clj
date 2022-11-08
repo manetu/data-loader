@@ -34,7 +34,7 @@
   :target-path "target/%s"
   :uberjar-name "app.jar"
   :jvm-opts ["-server"]
-  :resource-paths ["libs/protos-1.5.0-108.jar"]
+  :resource-paths ["libs/protos-1.7.0-11.jar"]
 
   :bin {:name "manetu-data-loader"
         :bin-path "target"

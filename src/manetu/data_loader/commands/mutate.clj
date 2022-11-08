@@ -4,16 +4,26 @@
   (:require [promesa.core :as p]
             [manetu.data-loader.utils :as utils]
             [manetu.data-loader.sparql :as sparql]
-            [manetu.api.account.v1.Accounts.client :as account.client]
+            [manetu.api.vault.v1.Vaults.client :as vault.client]
             [manetu.api.attribute.v1.RDF.client :as attribute.client]
             [taoensso.timbre :as log]))
 
 (defn create-vault
-  [options client {:keys [label] {:keys [Email]} :data}]
+  [options client {:keys [label]}]
   (log/trace (str "creating vault \"" label "\""))
-  (account.client/CreateVault client {:header (utils/create-header)
-                                      :email Email
-                                      :label label}))
+  (vault.client/CreateVault client {:header (utils/create-header)
+                                    :label label}))
+
+(defn delete-vault
+  [options client {:keys [label]}]
+  (log/trace (str "delete vault \"" label "\""))
+  (-> (vault.client/GetVault client {:header (utils/create-header)
+                                     :label label})
+      (p/then (fn [{{:keys [version]} :vault-info :as r}]
+                (log/trace "vault:" r)
+                (vault.client/DeleteVault client {:header (utils/create-header)
+                                                  :label label
+                                                  :version version})))))
 
 (defn load-attributes
   [options client {:keys [label data]}]
