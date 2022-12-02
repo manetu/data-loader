@@ -19,7 +19,8 @@
   (-> (login options)
       (p/then
        (fn [token]
-         (grpc.http2/connect {:uri url :ssl tls :metadata {"authorization" (str "bearer " token)}})))
+         (grpc.http2/connect (cond-> {:uri url :metadata {"authorization" (str "bearer " token)}}
+                                     (some? tls) (assoc :ssl tls)))))
       (p/then
        (fn [client]
          (log/debug "connected")
