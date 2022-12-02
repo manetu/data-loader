@@ -7,8 +7,7 @@
             [manetu.api.idp.v1.API.client :as idp.client]
             [manetu.data-loader.utils :as utils]
             [promesa.core :as p]
-            [taoensso.timbre :as log]
-            [buddy.sign.jwt :as jwt])
+            [taoensso.timbre :as log])
   (:refer-clojure :exclude [resolve]))
 
 (defn- wait-for-token
@@ -42,12 +41,6 @@
                    (log/error "login failed:" e)
                    (throw e))))))
 
-(defn- fake-login
-  [{:keys [mid provider] :as ctx}]
-  (jwt/sign {:sub mid :mid mid :mrealm provider} "secret"))
-
 (defn login
-  [{:keys [tls email mid] :or {tls false} :as ctx}]
-  (if (some? email)
-    (web-login ctx)
-    (fake-login ctx)))
+  [ctx]
+  (web-login ctx))

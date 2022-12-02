@@ -42,9 +42,8 @@
     :default true]
    [nil "--provider SID" "The service-provider"
     :default "manetu.com"]
-   ["-e" "--email EMAIL" "The email address of the user to login with (mutually exclusive from --mid)"]
+   ["-e" "--email EMAIL" "The email address of the user to login with"]
    ["-p" "--password PASSWORD" "The password of the user"]
-   [nil  "--mid MID" "The Manetu ID of the caller (mutually exclusive from --email/--password)"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
     :parse-fn keyword
@@ -83,21 +82,9 @@
                "Options:"
                options-summary]))
 
-(defn xor?
-  "returns 'true' for the logical exclusive-or condition"
-  [a b]
-  (match [a b]
-    [true false] true
-    [false true] true
-    [_ _] false))
-
-(defn mutually-exclusive-auth?
-  [{:keys [email mid]}]
-  (xor? (some? email) (some? mid)))
-
 (defn has-auth?
-  [{:keys [email mid]}]
-  (or (some? email) (some? mid)))
+  [{:keys [email]}]
+  (some? email))
 
 (defn -app
   [& args]
@@ -114,10 +101,7 @@
       (exit 0 (version))
 
       (not (has-auth? options))
-      (exit -1 "Must specify --email or --mid")
-
-      (not (mutually-exclusive-auth? options))
-      (exit -1 "--email and --mid are mutually exclusive")
+      (exit -1 "Must specify --email")
 
       (zero? (count arguments))
       (exit -1 (usage summary))
