@@ -5,9 +5,11 @@
 
 (def template
   "
-   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+   PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+   PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
    PREFIX person: <http://www.w3.org/ns/person#>
    PREFIX manetu: <http://manetu.com/manetu/>
+   PREFIX vid:    <http://manetu.io/rdf/vaultid/0.1/>
 
    INSERT
    {
@@ -59,7 +61,25 @@
           ?s   manetu:id \"{{id}}\" ;
                rdfs:Class manetu:Source ;
                manetu:hasPerson ?p .
+   };
+
+   DELETE { ?e ?a ?v }
+   WHERE
+   {
+          ?e    rdfs:Class vid:Descriptor ;
+                ?a ?v .
+   };
+
+   INSERT {
+          _:t    rdfs:Class       vid:Descriptor ;
+                 vid:Description  \"Data Subject Email\" ;
+                 vid:Value        ?email .
    }
+   WHERE {
+          ?r     rdfs:Class    manetu:Root .
+          ?email rdf:subject   ?r ;
+                 rdf:predicate manetu:email .
+   };
 
   ")
 

@@ -12,7 +12,8 @@
   [options client {:keys [label]}]
   (log/trace (str "creating vault \"" label "\""))
   (vault.client/CreateVault client {:header (utils/create-header)
-                                    :label label}))
+                                    :label label
+                                    :meta-data {:annotations {"io.manetu.datasubject.vault" "true"}}}))
 
 (defn delete-vault
   [options client {:keys [label]}]
