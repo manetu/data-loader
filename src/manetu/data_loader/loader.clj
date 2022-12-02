@@ -54,5 +54,5 @@
   (let [n (record-seq path count)
         ch (async/chan 1024)]
     (go
-      (record-seq path #(<!! (async/onto-chan ch (compute-labels %)))))
+      (record-seq path #(<!! (async/onto-chan!! ch (compute-labels %)))))
     {:n n :ch ch}))
