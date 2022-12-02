@@ -3,12 +3,14 @@
 (ns manetu.data-loader.loader
   (:require [buddy.core.hash :as hash]
             [buddy.core.codecs.base64 :as b64]
+            [medley.core :as m]
+            [taoensso.timbre :as log]
             [cheshire.core :as json]
-            [clojure.core.async :refer [<!!]]
             [clojure.data.csv :as csv]
             [me.raynes.fs :as fs]
             [clojure.java.io :as io]
-            [clojure.core.async :refer [go] :as async]))
+            [clojure.core.async :refer [go >!!] :as async]
+            [slingshot.slingshot :refer [throw+ try+]]))
 
 (defn- compute-label
   [email]
@@ -16,21 +18,21 @@
       (b64/encode true)
       (String. "UTF-8")))
 
-(defn compute-labels
-  [records]
-  (map (fn [{:keys [Email] :as data}]
-         {:label (compute-label Email) :data data})
-       records))
+(defn validate-headers [headers]
+  (doseq [header headers]
+    (cond
+      (some? (re-find #"\s" header))
+      (throw+ {:type ::bad-header :reason (str "Header \"" header "\" contains whitespace")})
+
+      :default :ok)))
 
 (defn load-json
   [rdr]
-  (json/parse-stream rdr true))
+  (json/parse-stream rdr))
 
 (defn csv->maps [data]
   (map zipmap
-       (->> (first data) ;; First row is the header
-            (map keyword) ;; Drop if you want string keys instead
-            repeat)
+       (repeat (first data)) ;; First row is the header
        (rest data)))
 
 (defn load-csv
@@ -53,6 +55,15 @@
   [path]
   (let [n (record-seq path count)
         ch (async/chan 1024)]
-    (go
-      (record-seq path #(<!! (async/onto-chan!! ch (compute-labels %)))))
+    (async/thread
+      (record-seq path
+                  (fn [records]
+                    (try+
+                     (doseq [{:strs [Email] :as data} records]
+                       (validate-headers (keys data))
+                       (>!! ch {:label (compute-label Email) :data (m/map-keys keyword data)}))
+                     (catch [:type ::bad-header] {:keys [reason]}
+                       (log/error reason))
+                     (finally
+                       (async/close! ch))))))
     {:n n :ch ch}))

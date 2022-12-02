@@ -29,7 +29,9 @@
                  [org.clojure/data.csv "1.0.1"]
                  [kixi/stats "0.5.5"]
                  [de.ubercode.clostache/clostache "1.4.0"]
-                 [buddy/buddy-sign "3.4.333"]]
+                 [buddy/buddy-sign "3.4.333"]
+                 [medley "1.4.0"]
+                 [slingshot "0.12.2"]]
   :main ^:skip-aot manetu.data-loader.main
   :target-path "target/%s"
   :uberjar-name "app.jar"
