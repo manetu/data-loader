@@ -20,7 +20,7 @@
       (p/then
        (fn [token]
          (grpc.http2/connect (cond-> {:uri url :metadata {"authorization" (str "bearer " token)}}
-                                     (some? tls) (assoc :ssl tls)))))
+                               (some? tls) (assoc :ssl tls)))))
       (p/then
        (fn [client]
          (log/debug "connected")
