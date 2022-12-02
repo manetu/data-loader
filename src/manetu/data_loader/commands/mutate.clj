@@ -13,7 +13,8 @@
   (log/trace (str "creating vault \"" label "\""))
   (vault.client/CreateVault client {:header (utils/create-header)
                                     :label label
-                                    :meta-data {:annotations {"io.manetu.datasubject.vault" "true"}}}))
+                                    :meta-data {:classification :cl-maximum
+                                                :annotations {"io.manetu.datasubject.vault" "true"}}}))
 
 (defn delete-vault
   [options client {:keys [label]}]
