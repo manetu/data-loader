@@ -36,10 +36,8 @@
 (def options
   [["-h" "--help"]
    ["-v" "--version" "Print the version and exit"]
-   ["-u" "--url URL" "The connection URL"
-    :default "https://portal.manetu.io:443"]
-   ["-t" "--[no-]tls" "Enable/disable TLS (default: enabled)"
-    :default true]
+   ["-u" "--url URL" "The connection URL"]
+   ["-t" "--[no-]tls" "Force enable/disable TLS"]
    [nil "--[no-]progress" "Enable/disable progress output (default: enabled)"
     :default true]
    [nil "--provider SID" "The service-provider"
