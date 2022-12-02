@@ -43,7 +43,7 @@
            {:success true :result result}))
         (p/catch
          (fn [e]
-           (log/trace (str "ERROR for " Email ":" (ex-message e)))
+           (log/error (str Email ": " (ex-message e) " " (ex-data e)))
            {:success false :exception e}))
         (p/then
          (fn [result]

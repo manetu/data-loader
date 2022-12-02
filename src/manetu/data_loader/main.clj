@@ -19,7 +19,8 @@
      {:enabled? true
       :async false
       :fn (fn [{:keys [timestamp_ msg_ level] :as data}]
-            (println (force timestamp_) (string/upper-case (name level)) (force msg_)))}}}))
+            (binding [*out* *err*]
+              (println (force timestamp_) (string/upper-case (name level)) (force msg_))))}}}))
 
 (def log-levels #{:trace :debug :info :error})
 (defn print-loglevels []
