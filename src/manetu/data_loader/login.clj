@@ -25,10 +25,10 @@
 
 (defn- web-login
   "Acquires a real JWT from the Manetu IDP"
-  [{:keys [url tls email password provider] :or {tls false} :as ctx}]
+  [{:keys [url tls userid password provider] :or {tls false} :as ctx}]
   (let [ch (async/chan 16)
         params {:header (utils/create-header)
-                :idp-creds {:email email :password password}
+                :idp-creds {:email userid :password password}
                 :oidc {:client-id provider}}]
     (log/debug "logging in")
     (-> (grpc.http2/connect {:uri url :ssl tls})

@@ -42,7 +42,7 @@
     :default true]
    [nil "--provider SID" "The service-provider"
     :default "manetu.com"]
-   ["-e" "--email EMAIL" "The email address of the user to login with"]
+   [nil "--userid USERID" "The id of the user to login with"]
    ["-p" "--password PASSWORD" "The password of the user"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
@@ -83,8 +83,8 @@
                options-summary]))
 
 (defn has-auth?
-  [{:keys [email]}]
-  (some? email))
+  [{:keys [userid]}]
+  (some? userid))
 
 (defn -app
   [& args]
@@ -101,7 +101,7 @@
       (exit 0 (version))
 
       (not (has-auth? options))
-      (exit -1 "Must specify --email")
+      (exit -1 "Must specify --userid")
 
       (zero? (count arguments))
       (exit -1 (usage summary))
