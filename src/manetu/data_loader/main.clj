@@ -44,6 +44,7 @@
    [nil "--provider SID" "The service-provider"
     :default "manetu.com"]
    [nil "--userid USERID" "The id of the user to login with"]
+   ["-e" "--email EMAIL" "The id of the user to login with (DEPRECATED: use --userid)"]
    ["-p" "--password PASSWORD" "The password of the user"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
@@ -83,9 +84,26 @@
                "Options:"
                options-summary]))
 
+(defn mutually-exclusive-auth?
+  [{:keys [userid email]}]
+  (match [(some? userid) (some? email)]
+    [true false] true
+    [false true] true
+    [_ _] false))
+
 (defn has-auth?
-  [{:keys [userid]}]
-  (some? userid))
+  [{:keys [userid email]}]
+  (or (some? userid) (some? email)))
+
+(defn fix-userid [{:keys [email] :as options}]
+  (log/warn "--email is deprecated: Use --userid")
+  (-> options
+      (assoc :userid email)
+      (dissoc :email)))
+
+(defn fix-options [{:keys [email] :as options}]
+  (cond-> options
+    (some? email) fix-userid))
 
 (defn -app
   [& args]
@@ -104,13 +122,17 @@
       (not (has-auth? options))
       (exit -1 "Must specify --userid")
 
+      (not (mutually-exclusive-auth? options))
+      (exit -1 "--userid and --email are mutually exclusive")
+
       (zero? (count arguments))
       (exit -1 (usage summary))
 
       :else
       (do
         (set-logging log-level)
-        (core/exec options (first arguments))))))
+        (let [options (fix-options options)]
+          (core/exec options (first arguments)))))))
 
 (defn -main
   [& args]
