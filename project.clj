@@ -50,5 +50,6 @@
   :repl-options {:init-ns user}
 
   :profiles {:dev {:dependencies [[clj-http "3.12.3"]
-                                  [org.clojure/tools.namespace "1.3.0"]]}
+                                  [org.clojure/tools.namespace "1.3.0"]
+                                  [criterium "0.4.6"]]}
              :uberjar {:aot :all}})
