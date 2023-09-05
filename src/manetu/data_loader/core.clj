@@ -14,13 +14,13 @@
             [doric.core :refer [table]]))
 
 (defn connect
-  [{:keys [url tls] :as options}]
+  [{:keys [url insecure] :as options}]
   (log/debug "connecting")
   (-> (login options)
       (p/then
        (fn [token]
          (grpc.http2/connect (cond-> {:uri url :metadata {"authorization" (str "bearer " token)}}
-                               (some? tls) (assoc :ssl tls)))))
+                               (true? insecure) (assoc :insecure? true)))))
       (p/then
        (fn [client]
          (log/debug "connected")
