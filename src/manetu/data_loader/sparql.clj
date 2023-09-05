@@ -7,7 +7,6 @@
   "
    PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
    PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-   PREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>
    PREFIX person: <http://www.w3.org/ns/person#>
    PREFIX manetu: <http://manetu.com/manetu/>
    PREFIX vid:    <http://manetu.io/rdf/vaultid/0.1/>
@@ -84,20 +83,7 @@
 
   ")
 
-(def detectable-types
-  [[#"^[+-]?\d+(\.\d+)?[eE][-+]?[0-9]*$"                     "double"]
-   [#"^[+-]?\d+\.\d+?$"                                      "decimal"]
-   [#"^[+-]?\d+$"                                            "integer"]
-   [#"^\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])Z?$"  "date"]])
-
-(defn detect-type [v]
-  (or (some (fn [[re type]]
-              (when (some? (re-matches re v))
-                type))
-            detectable-types)
-      "string"))
-
-(defn field-> [[k v]] {:name (str "person:" (name k)) :value (str "\"" v "\"^^xsd:" (detect-type v))})
+(defn field-> [[k v]] {:name (str "person:" (name k)) :value (str "\"" v "\"")})
 
 (defn convert
   [{:keys [type id class] :as options} {:keys [Email] :as record}]
