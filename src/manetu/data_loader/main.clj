@@ -38,7 +38,8 @@
   [["-h" "--help"]
    ["-v" "--version" "Print the version and exit"]
    ["-u" "--url URL" "The connection URL"]
-   ["-t" "--[no-]tls" "Force enable/disable TLS"]
+   ["-i" "--insecure" "Disable TLS checks (dev only)"
+    :default false]
    [nil "--[no-]progress" "Enable/disable progress output (default: enabled)"
     :default true]
    [nil "--provider SID" "The service-provider"
