@@ -1,9 +1,9 @@
-;; Copyright © 2020-2022 Manetu, Inc.  All rights reserved
+;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.sparql
   (:require [clostache.parser :as clostache]))
 
-(def template
+(def update-template
   "
    PREFIX rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
    PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -83,8 +83,21 @@
 
   ")
 
+(def query-template
+  "
+   PREFIX person: <http://www.w3.org/ns/person#>
+   PREFIX manetu: <http://manetu.com/manetu/>
+
+   SELECT ?attribute ?value
+   WHERE {?root   manetu:email \"{{email}}\" ;
+                  manetu:hasSource ?src .
+          ?src    manetu:id \"{{id}}\" ;
+                  manetu:hasPerson ?person .
+          ?person ?attribute ?value .
+          }")
+
 (defn field-> [[k v]] {:name (str "person:" (name k)) :value (str "\"" v "\"")})
 
 (defn convert
   [{:keys [type id class] :as options} {:keys [Email] :as record}]
-  (clostache/render template {:type type :id id :class class :email Email :attributes (map field-> record)}))
+  (clostache/render update-template {:type type :id id :class class :email Email :attributes (map field-> record)}))

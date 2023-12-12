@@ -1,30 +1,16 @@
-;; Copyright © 2020-2022 Manetu, Inc.  All rights reserved
+;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.core
-  (:require [manetu.data-loader.login :refer [login]]
-            [manetu.data-loader.commands.core :as commands]
-            [manetu.data-loader.loader :as loader]
-            [manetu.data-loader.time :as t]
-            [protojure.grpc.client.providers.http2 :as grpc.http2]
-            [promesa.core :as p]
+  (:require [promesa.core :as p]
             [taoensso.timbre :as log]
             [clojure.core.async :refer [>!! <! go go-loop] :as async]
             [progrock.core :as pr]
             [kixi.stats.core :as kixi]
-            [doric.core :refer [table]]))
-
-(defn connect
-  [{:keys [url insecure] :as options}]
-  (log/debug "connecting")
-  (-> (login options)
-      (p/then
-       (fn [token]
-         (grpc.http2/connect (cond-> {:uri url :metadata {"authorization" (str "bearer " token)}}
-                               (true? insecure) (assoc :insecure? true)))))
-      (p/then
-       (fn [client]
-         (log/debug "connected")
-         client))))
+            [doric.core :refer [table]]
+            [manetu.data-loader.commands :as commands]
+            [manetu.data-loader.loader :as loader]
+            [manetu.data-loader.time :as t]
+            [manetu.data-loader.driver.core :as driver.core]))
 
 (defn promise-put!
   [port val]
@@ -33,10 +19,10 @@
      (async/put! port val resolve))))
 
 (defn execute-command
-  [{:keys [verbose-errors] :as options} client f {{:keys [Email]} :data :as record} ch]
+  [{:keys [verbose-errors]} f {{:keys [Email]} :data :as record} ch]
   (log/trace "record:" record)
   (let [start (t/now)]
-    (-> (f options client record)
+    (-> (f record)
         (p/then
          (fn [result]
            (log/trace "success for" Email)
@@ -60,14 +46,14 @@
            (async/close! ch))))))
 
 (defn execute-commands
-  [{:keys [concurrency] :as options} client f output-ch input-ch]
+  [{:keys [concurrency] :as options} f output-ch input-ch]
   (p/create
    (fn [resolve reject]
      (go
        (log/trace "launching" concurrency "requests")
        (<! (async/pipeline-async concurrency
                                  output-ch
-                                 (partial execute-command options client f)
+                                 (partial execute-command options f)
                                  input-ch))
        (resolve true)))))
 
@@ -129,15 +115,15 @@
 (defn exec
   [{:keys [mode concurrency] :as options} path]
   (let [{:keys [n] :as records} (loader/load-records path)
-        output-ch (async/chan (* 4 concurrency))
-        f (commands/get-handler mode)]
+        output-ch (async/chan (* 4 concurrency))]
     (log/debug "processing" n "records with options:" options)
-    @(-> (connect options)
+    @(-> (driver.core/create options)
          (p/then
-          (fn [client]
-            (let [mux (async/mult output-ch)]
+          (fn [driver]
+            (let [mux (async/mult output-ch)
+                  f (commands/get-handler mode driver)]
               (p/all [(t/now)
-                      (execute-commands options client f output-ch (:ch records))
+                      (execute-commands options f output-ch (:ch records))
                       (show-progress options n mux)
                       (compute-stats options n mux)]))))
          (p/then

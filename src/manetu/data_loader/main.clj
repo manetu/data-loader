@@ -1,12 +1,13 @@
-;; Copyright © 2020-2022 Manetu, Inc.  All rights reserved
+;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.main
   (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as string]
-            [manetu.data-loader.core :as core]
-            [manetu.data-loader.commands.core :as commands]
             [taoensso.timbre :as log]
-            [clojure.core.match :refer [match]])
+            [clojure.core.match :refer [match]]
+            [manetu.data-loader.core :as core]
+            [manetu.data-loader.commands :as commands]
+            [manetu.data-loader.driver.core :as driver.core])
   (:gen-class))
 
 (defn set-logging
@@ -27,6 +28,12 @@
   (str "[" (string/join ", " (map name log-levels)) "]"))
 (def loglevel-description
   (str "Select the logging verbosity level from: " (print-loglevels)))
+
+(def drivers (into #{} (keys driver.core/driver-map)))
+(defn print-drivers []
+  (str "[" (string/join ", " (map name drivers)) "]"))
+(def driver-description
+  (str "Select the driver from: " (print-drivers)))
 
 (def modes (into #{} (keys commands/command-map)))
 (defn print-modes []
@@ -68,7 +75,11 @@
    ["-m" "--mode MODE" mode-description
     :default :load-attributes
     :parse-fn keyword
-    :validate [modes (str "Must be one of " (print-modes))]]])
+    :validate [modes (str "Must be one of " (print-modes))]]
+   ["-d" "--driver DRIVER" driver-description
+    :default :grpc
+    :parse-fn keyword
+    :validate [drivers (str "Must be one of " (print-drivers))]]])
 
 (defn exit [status msg & args]
   (do

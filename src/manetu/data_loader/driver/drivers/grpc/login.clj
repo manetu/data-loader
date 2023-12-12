@@ -1,6 +1,6 @@
-;; Copyright © 2020-2022 Manetu, Inc.  All rights reserved
+;; Copyright © Manetu, Inc.  All rights reserved
 
-(ns manetu.data-loader.login
+(ns manetu.data-loader.driver.drivers.grpc.login
   (:require [protojure.grpc.client.providers.http2 :as grpc.http2]
             [protojure.protobuf.any :refer [any->]]
             [clojure.core.async :refer [go-loop <!] :as async]
@@ -41,6 +41,15 @@
                    (log/error "login failed:" e)
                    (throw e))))))
 
-(defn login
-  [ctx]
-  (web-login ctx))
+(defn connect
+  [{:keys [url insecure] :as options}]
+  (log/debug "connecting")
+  (-> (web-login options)
+      (p/then
+       (fn [token]
+         (grpc.http2/connect (cond-> {:uri url :metadata {"authorization" (str "bearer " token)}}
+                               (true? insecure) (assoc :insecure? true)))))
+      (p/then
+       (fn [client]
+         (log/debug "connected")
+         client))))
