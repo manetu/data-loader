@@ -53,6 +53,8 @@
     :validate [log-levels (str "Must be one of " (print-loglevels))]]
    [nil "--fatal-errors" "Any sub-operation failure is considered to be an application level failure"
     :default false]
+   [nil "--verbose-errors" "Any sub-operation failure is logged as ERROR instead of TRACE"
+    :default false]
    [nil "--type TYPE" "The type of data source this CLI represents"
     :default "data-loader"]
    [nil "--id ID" "The id of the data-source this CLI represents"

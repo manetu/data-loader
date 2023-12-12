@@ -33,7 +33,7 @@
      (async/put! port val resolve))))
 
 (defn execute-command
-  [options client f {{:keys [Email]} :data :as record} ch]
+  [{:keys [verbose-errors] :as options} client f {{:keys [Email]} :data :as record} ch]
   (log/trace "record:" record)
   (let [start (t/now)]
     (-> (f options client record)
@@ -43,7 +43,9 @@
            {:success true :result result}))
         (p/catch
          (fn [e]
-           (log/error (str Email ": " (ex-message e) " " (ex-data e)))
+           (if verbose-errors
+             (log/error (str Email ": " (ex-message e) " " (ex-data e)))
+             (log/trace "ERROR" (str Email ": " (ex-message e) " " (ex-data e))))
            {:success false :exception e}))
         (p/then
          (fn [result]
