@@ -52,10 +52,10 @@ Options:
   -u, --url URL                                                  The connection URL
   -i, --insecure           false                                 Disable TLS checks (dev only)
       --[no-]progress      true                                  Enable/disable progress output (default: enabled)
-      --provider SID       manetu.com                            The service-provider
-      --userid USERID                                            The id of the user to login with
-  -p, --password PASSWORD                                        The password of the user
-  -t, --token TOKEN                                              A personal access token
+  -r, --realm REALM        manetu.com                            The realm ID
+  -t, --token TOKEN                                              A personal access token (GraphQL Only)
+      --userid USERID                                            The id of the user to login with (GRPC Only)
+  -p, --password PASSWORD                                        The password of the user (GRPC Only)
   -l, --log-level LEVEL    :info                                 Select the logging verbosity level from: [trace, debug, info, error]
       --fatal-errors       false                                 Any sub-operation failure is considered to be an application level failure
       --verbose-errors     false                                 Any sub-operation failure is logged as ERROR instead of TRACE
@@ -64,7 +64,7 @@ Options:
       --class CLASS        global                                The schemaClass of the data-source this CLI represents
   -c, --concurrency NUM    16                                    The number of parallel requests to issue
   -m, --mode MODE          :load-attributes                      Select the mode from: [query-attributes, load-attributes, onboard, delete-vaults, delete-attributes, create-vaults]
-  -d, --driver DRIVER      :grpc                                 Select the driver from: [graphql, grpc]```
+  -d, --driver DRIVER      :graphql                              Select the driver from: [graphql, grpc]
 
 The parameters '--url --provider --userid --password' are all related to the caller's context and the environment they are targetting.
 
@@ -74,13 +74,15 @@ Each row in the <file.json> will create parallel request to the server.  The sys
 
 ### Example
 
+Set a Personal Access Token to the environment variable MANETU_TOKEN, and then:
+
 ##### Create vaults for Users
 
 ```
-$ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 --userid admin -p test --provider mockprovider.com -m create-vaults sample-data/mock-data-100.json
+$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN --realm myrealm -m create-vaults sample-data/mock-data-100.json
 ```
 
 ##### Load attributes for Users
 
 ```
-$ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 --userid admin -p test --provider mockprovider.com -m load-attributes sample-data/mock-data-100.json
+$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN --realm myrealm -m load-attributes sample-data/mock-data-100.json

@@ -48,11 +48,11 @@
     :default false]
    [nil "--[no-]progress" "Enable/disable progress output (default: enabled)"
     :default true]
-   [nil "--provider SID" "The service-provider"
+   ["-r" "--realm REALM" "The realm ID"
     :default "manetu.com"]
-   [nil "--userid USERID" "The id of the user to login with"]
-   ["-p" "--password PASSWORD" "The password of the user"]
-   ["-t" "--token TOKEN" "A personal access token"]
+   ["-t" "--token TOKEN" "A personal access token (GraphQL Only)"]
+   [nil "--userid USERID" "The id of the user to login with (GRPC Only)"]
+   ["-p" "--password PASSWORD" "The password of the user (GRPC Only)"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
     :parse-fn keyword
