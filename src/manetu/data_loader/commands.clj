@@ -11,7 +11,7 @@
   (partial driver.api/delete-vault driver))
 
 (defn init-load-attributes [driver]
-  (partial driver.api/create-vault driver))
+  (partial driver.api/load-attributes driver))
 
 (defn init-onboard [driver]
   (fn [record]

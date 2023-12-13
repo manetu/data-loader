@@ -42,37 +42,45 @@ $ make
 
 ```
 $ ./target/manetu-data-loader -h
-manetu-data-loader version: v0.1.0
+manetu-data-loader version: vX.Y.Z
 
 Usage: manetu-data-loader [options] <file.json>
 
 Options:
   -h, --help
-  -v, --version                                          Print the version and exit
-  -u, --url URL            https://portal.manetu.io:443  The connection URL
-  -t, --[no-]tls                                         Enable TLS
-      --provider SID       manetu.com                    The service-provider
-  -e, --email EMAIL                                      The email address of the user to login with
-  -p, --password PASSWORD                                The password of the user
-  -l, --log-level LEVEL    :info                         Select the logging verbosity level from: [trace, debug, info, error]
-  -m, --mode MODE          :load-attributes              Select the mode from: [load-attributes, delete-attributes, create-vaults]
-```
+  -v, --version                                                  Print the version and exit
+  -u, --url URL                                                  The connection URL
+  -i, --insecure           false                                 Disable TLS checks (dev only)
+      --[no-]progress      true                                  Enable/disable progress output (default: enabled)
+      --provider SID       manetu.com                            The service-provider
+      --userid USERID                                            The id of the user to login with
+  -p, --password PASSWORD                                        The password of the user
+  -t, --token TOKEN                                              A personal access token
+  -l, --log-level LEVEL    :info                                 Select the logging verbosity level from: [trace, debug, info, error]
+      --fatal-errors       false                                 Any sub-operation failure is considered to be an application level failure
+      --verbose-errors     false                                 Any sub-operation failure is logged as ERROR instead of TRACE
+      --type TYPE          data-loader                           The type of data source this CLI represents
+      --id ID              535CC6FC-EAF7-4CF3-BA97-24B2406674A7  The id of the data-source this CLI represents
+      --class CLASS        global                                The schemaClass of the data-source this CLI represents
+  -c, --concurrency NUM    16                                    The number of parallel requests to issue
+  -m, --mode MODE          :load-attributes                      Select the mode from: [query-attributes, load-attributes, onboard, delete-vaults, delete-attributes, create-vaults]
+  -d, --driver DRIVER      :grpc                                 Select the driver from: [graphql, grpc]```
 
-The parameters '--url --tls --provider --email --password' are all related to the caller's context and the environment they are targetting.
+The parameters '--url --provider --userid --password' are all related to the caller's context and the environment they are targetting.
 
 '--mode' and the <file.json> input relate to the operation that the tool will perform.
 
-Each row in the <file.json> will create parallel GRPCs to the server.  The system will measure time and report the status of each response.
+Each row in the <file.json> will create parallel request to the server.  The system will measure time and report the status of each response.
 
 ### Example
 
 ##### Create vaults for Users
 
 ```
-$ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 -e realm-admin@mockprovider.com -p test --provider mockprovider.com -m create-vaults sample-data/mock-data-100.json
+$ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 --userid admin -p test --provider mockprovider.com -m create-vaults sample-data/mock-data-100.json
 ```
 
 ##### Load attributes for Users
 
 ```
-$ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 -e realm-admin@mockprovider.com -p test --provider mockprovider.com -m load-attributes sample-data/mock-data-100.json
+$ ./target/manetu-data-loader -u https://ghaskins.sbx.aws.manetu.com:443 --userid admin -p test --provider mockprovider.com -m load-attributes sample-data/mock-data-100.json

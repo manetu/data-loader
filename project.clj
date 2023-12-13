@@ -31,7 +31,9 @@
                  [de.ubercode.clostache/clostache "1.4.0"]
                  [buddy/buddy-sign "3.5.351"]
                  [medley "1.4.0"]
-                 [slingshot "0.12.2"]]
+                 [slingshot "0.12.2"]
+                 [district0x/graphql-query "1.0.6"]
+                 [http-kit/http-kit "2.7.0"]]
   :main ^:skip-aot manetu.data-loader.main
   :target-path "target/%s"
   :uberjar-name "app.jar"

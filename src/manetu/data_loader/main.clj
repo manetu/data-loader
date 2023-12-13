@@ -4,7 +4,6 @@
   (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as string]
             [taoensso.timbre :as log]
-            [clojure.core.match :refer [match]]
             [manetu.data-loader.core :as core]
             [manetu.data-loader.commands :as commands]
             [manetu.data-loader.driver.core :as driver.core])
@@ -52,8 +51,8 @@
    [nil "--provider SID" "The service-provider"
     :default "manetu.com"]
    [nil "--userid USERID" "The id of the user to login with"]
-   ["-e" "--email EMAIL" "The id of the user to login with (DEPRECATED: use --userid)"]
    ["-p" "--password PASSWORD" "The password of the user"]
+   ["-t" "--token TOKEN" "A personal access token"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
     :parse-fn keyword
@@ -77,7 +76,7 @@
     :parse-fn keyword
     :validate [modes (str "Must be one of " (print-modes))]]
    ["-d" "--driver DRIVER" driver-description
-    :default :grpc
+    :default :graphql
     :parse-fn keyword
     :validate [drivers (str "Must be one of " (print-drivers))]]])
 
@@ -98,26 +97,9 @@
                "Options:"
                options-summary]))
 
-(defn mutually-exclusive-auth?
-  [{:keys [userid email]}]
-  (match [(some? userid) (some? email)]
-    [true false] true
-    [false true] true
-    [_ _] false))
-
 (defn has-auth?
-  [{:keys [userid email]}]
-  (or (some? userid) (some? email)))
-
-(defn fix-userid [{:keys [email] :as options}]
-  (log/warn "--email is deprecated: Use --userid")
-  (-> options
-      (assoc :userid email)
-      (dissoc :email)))
-
-(defn fix-options [{:keys [email] :as options}]
-  (cond-> options
-    (some? email) fix-userid))
+  [{:keys [userid token]}]
+  (or (some? userid) (some? token)))
 
 (defn -app
   [& args]
@@ -134,10 +116,7 @@
       (exit 0 (version))
 
       (not (has-auth? options))
-      (exit -1 "Must specify --userid")
-
-      (not (mutually-exclusive-auth? options))
-      (exit -1 "--userid and --email are mutually exclusive")
+      (exit -1 "Must specify --userid or --token")
 
       (zero? (count arguments))
       (exit -1 (usage summary))
@@ -145,8 +124,7 @@
       :else
       (do
         (set-logging log-level)
-        (let [options (fix-options options)]
-          (core/exec options (first arguments)))))))
+        (core/exec options (first arguments))))))
 
 (defn -main
   [& args]
