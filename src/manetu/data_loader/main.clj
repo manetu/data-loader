@@ -48,11 +48,7 @@
     :default false]
    [nil "--[no-]progress" "Enable/disable progress output (default: enabled)"
     :default true]
-   ["-r" "--realm REALM" "The realm ID"
-    :default "manetu.com"]
-   ["-t" "--token TOKEN" "A personal access token (GraphQL Only)"]
-   [nil "--userid USERID" "The id of the user to login with (GRPC Only)"]
-   ["-p" "--password PASSWORD" "The password of the user (GRPC Only)"]
+   ["-t" "--token TOKEN" "A personal access token"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
     :parse-fn keyword
@@ -97,13 +93,9 @@
                "Options:"
                options-summary]))
 
-(defn has-auth?
-  [{:keys [userid token]}]
-  (or (some? userid) (some? token)))
-
 (defn -app
   [& args]
-  (let [{{:keys [help log-level] :as options} :options :keys [arguments errors summary]} (parse-opts args options)]
+  (let [{{:keys [help log-level url token] :as options} :options :keys [arguments errors summary]} (parse-opts args options)]
     (cond
 
       help
@@ -115,8 +107,11 @@
       (:version options)
       (exit 0 (version))
 
-      (not (has-auth? options))
-      (exit -1 "Must specify --userid or --token")
+      (string/blank? url)
+      (exit -1 "--url required")
+
+      (string/blank? token)
+      (exit -1 "--token required")
 
       (zero? (count arguments))
       (exit -1 (usage summary))
