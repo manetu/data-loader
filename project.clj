@@ -8,11 +8,8 @@
             [jonase/eastwood "1.3.0"]
             [lein-bin "0.3.5"]]
   :dependencies [[org.clojure/clojure "1.11.1"]
+                 [org.clojure/core.async "1.6.681"]
                  [org.clojure/tools.cli "1.0.219"]
-                 [io.pedestal/pedestal.service "0.6.0"]
-                 [io.github.protojure/grpc-client "2.7.1"]
-                 [io.github.protojure/google.protobuf "2.0.1"]
-                 [com.google.protobuf/protobuf-java "3.24.2"]
                  [com.taoensso/timbre "6.2.2"]
                  [com.fzakaria/slf4j-timbre "0.4.0"]
                  [org.slf4j/jul-to-slf4j "2.0.9"]
@@ -20,9 +17,9 @@
                  [org.slf4j/log4j-over-slf4j "2.0.9"]
                  [org.eclipse.jetty.http2/http2-client "11.0.16"]
                  [org.eclipse.jetty/jetty-alpn-java-client "11.0.16"]
+                 [ring/ring-codec "1.2.0"]
+                 [funcool/promesa "11.0.678"]
                  [cheshire "5.11.0"]
-                 [danlentz/clj-uuid "0.1.9"]
-                 [org.clojure/core.match "1.0.1"]
                  [progrock "0.1.2"]
                  [doric "0.9.0"]
                  [clj-commons/fs "1.6.310"]
@@ -33,12 +30,12 @@
                  [medley "1.4.0"]
                  [slingshot "0.12.2"]
                  [district0x/graphql-query "1.0.6"]
-                 [http-kit/http-kit "2.7.0"]]
+                 [http-kit/http-kit "2.7.0"]
+                 [environ "1.2.0"]]
   :main ^:skip-aot manetu.data-loader.main
   :target-path "target/%s"
   :uberjar-name "app.jar"
   :jvm-opts ["-server"]
-  :resource-paths ["libs/protos-1.7.0-11.jar"]
 
   :bin {:name "manetu-data-loader"
         :bin-path "target"
