@@ -2,7 +2,7 @@
 
 (ns manetu.data-loader.driver.core
   (:require
-    [manetu.data-loader.driver.drivers.graphql.core :as graphql]))
+   [manetu.data-loader.driver.drivers.graphql.core :as graphql]))
 
 (def driver-map
   {:graphql graphql/create})
