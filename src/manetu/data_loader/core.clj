@@ -1,7 +1,8 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.core
-  (:require [promesa.core :as p]
+  (:require [medley.core :as m]
+            [promesa.core :as p]
             [taoensso.timbre :as log]
             [clojure.core.async :refer [>!! <! go go-loop] :as async]
             [progrock.core :as pr]
@@ -10,7 +11,8 @@
             [manetu.data-loader.commands :as commands]
             [manetu.data-loader.loader :as loader]
             [manetu.data-loader.time :as t]
-            [manetu.data-loader.driver.core :as driver.core]))
+            [manetu.data-loader.driver.core :as driver.core]
+            [manetu.data-loader.stats :as stats]))
 
 (defn promise-put!
   [port val]
@@ -82,9 +84,20 @@
          (let [result (<! (async/transduce xform f (f) ch))]
            (resolve result)))))))
 
+(defn round2
+  "Round a double to the given precision (number of significant digits)"
+  [precision ^double d]
+  (let [factor (Math/pow 10 precision)]
+    (/ (Math/round (* d factor)) factor)))
+
 (defn compute-summary-stats
   [options n mux]
-  (transduce-promise options n mux (map :duration) kixi/summary))
+  (-> (transduce-promise options n mux (map :duration) stats/summary)
+      (p/then (fn [{:keys [dist] :as summary}]
+                (-> summary
+                    (dissoc :dist)
+                    (merge dist)
+                    (as-> $ (m/map-vals #(round2 3 (or % 0)) $)))))))
 
 (defn successful?
   [{:keys [success]}]
@@ -107,7 +120,7 @@
 
 (defn render
   [{:keys [fatal-errors] :as options} {:keys [failures] :as stats}]
-  (println (table [:successes :failures :min :median :max :total-duration] [stats]))
+  (println (table [:successes :failures :min :mean :stddev :p50 :p90 :p95 :p99 :max :total-duration :rate] [stats]))
   (if (and fatal-errors (pos? failures))
     -1
     0))
@@ -127,9 +140,10 @@
                       (show-progress options n mux)
                       (compute-stats options n mux)]))))
          (p/then
-          (fn [[start _ _ stats]]
-            (let [end (t/now)]
-              (assoc stats :total-duration (t/duration end start)))))
+          (fn [[start _ _ {:keys [successes] :as stats}]]
+            (let [end (t/now)
+                  d (t/duration end start)]
+              (assoc stats :total-duration (round2 3 d) :rate (round2 2 (* (/ successes d) 1000))))))
          (p/then (partial render options))
          (p/catch
           (fn [e]
