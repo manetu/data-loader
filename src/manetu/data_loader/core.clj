@@ -41,20 +41,20 @@
                  d (t/duration end start)]
              (log/trace Email "processed in" d "msecs")
              (assoc result
-               :email Email
-               :duration d)))))))
+                    :email Email
+                    :duration d)))))))
 
 (defn execute-commands
   [{:keys [concurrency] :as options} f output-ch input-ch]
   (-> (p/all
-        (map
-          (fn [_]
-            (p/vthread
-              (loop []
-                (when-let [m (<!! input-ch)]
-                  (>!! output-ch @(execute-command options f m))
-                  (recur)))))
-          (range concurrency)))
+       (map
+        (fn [_]
+          (p/vthread
+           (loop []
+             (when-let [m (<!! input-ch)]
+               (>!! output-ch @(execute-command options f m))
+               (recur)))))
+        (range concurrency)))
       (p/then (fn [_]
                 (async/close! output-ch)
                 true))))
