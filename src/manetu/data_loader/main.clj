@@ -95,7 +95,8 @@
 
 (defn -app
   [& args]
-  (let [{{:keys [help log-level url token] :as options} :options :keys [arguments errors summary]} (parse-opts args options)]
+  (let [{{:keys [help log-level url token] :as options} :options :keys
+         [arguments errors summary]} (parse-opts args options)]
     (cond
 
       help
