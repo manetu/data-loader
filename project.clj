@@ -38,7 +38,6 @@
   :jvm-opts ["-server"]
 
   :bin {:name "manetu-data-loader"
-        :bin-path "target"
         :bootclasspath false}
 
   :eastwood {:add-linters [:unused-namespaces]
