@@ -42,13 +42,13 @@
 
 (def options
   [["-h" "--help"]
-   ["-v" "--version" "Print the version and exit"]
+   ["-v" "--version" "Print version info and exit"]
    ["-u" "--url URL" "The connection URL"]
-   ["-i" "--insecure" "Disable TLS checks (dev only)"
+   ["-i" "--insecure" "Disable TLS checks"
     :default false]
-   [nil "--[no-]progress" "Enable/disable progress output (default: enabled)"
+   [nil "--[no-]progress" "Enable/disable progress output"
     :default true]
-   ["-t" "--token TOKEN" "A personal access token"]
+   ["-t" "--token TOKEN" "A Manetu personal access token"]
    ["-l" "--log-level LEVEL" loglevel-description
     :default :info
     :parse-fn keyword
@@ -57,12 +57,6 @@
     :default false]
    [nil "--verbose-errors" "Any sub-operation failure is logged as ERROR instead of TRACE"
     :default false]
-   [nil "--type TYPE" "The type of data source this CLI represents"
-    :default "data-loader"]
-   [nil "--id ID" "The id of the data-source this CLI represents"
-    :default "535CC6FC-EAF7-4CF3-BA97-24B2406674A7"]
-   [nil "--class CLASS" "The schemaClass of the data-source this CLI represents"
-    :default "global"]
    ["-c" "--concurrency NUM" "The number of parallel requests to issue"
     :default 16
     :parse-fn #(Integer/parseInt %)
@@ -74,7 +68,13 @@
    ["-d" "--driver DRIVER" driver-description
     :default :graphql
     :parse-fn keyword
-    :validate [drivers (str "Must be one of " (print-drivers))]]])
+    :validate [drivers (str "Must be one of " (print-drivers))]]
+   [nil "--id ID" "The RDF id to be applied the data source"
+    :default "535CC6FC-EAF7-4CF3-BA97-24B2406674A7"]
+   [nil "--type TYPE" "the RDF type of the data source"
+    :default "data-loader"]
+   [nil "--class CLASS" "The RDF schemaClass applied to the data source"
+    :default "global"]])
 
 (defn exit [status msg & args]
   (do
@@ -88,7 +88,7 @@
 (defn usage [options-summary]
   (prep-usage [(version)
                ""
-               "Usage: manetu-data-loader [options] <file.json>"
+               "Usage: manetu-data-loader [options] <input-file>"
                ""
                "Options:"
                options-summary]))

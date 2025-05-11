@@ -2,11 +2,11 @@
 
 [![CircleCI](https://circleci.com/gh/manetu/data-loader/tree/master.svg?style=svg)](https://circleci.com/gh/manetu/data-loader/tree/master)
 
-The Manetu data-loader is a command-line tool to load and verify RDF-based attribute data, at scale, into the Manetu platform.  This tool emulates the essential functions of a Manetu data connector intended to facilitate testing.  The basic premise is that a user expresses a set of PII data in JSON or CSV format, and the tool provides various operations on this data, such as onboarding, verifying, and deleting vaults.
+The Manetu data-loader is a command-line tool to validate and load attribute data onto the Manetu Platform. The tool is designed to run "at scale" such that it can put significant load on a Manetu Plaftorm for performance testing. Data-loader takes a set of Personally Identifiable Information (PII) in JSON or CSV format and executes a selected operation using this data, such as onboarding, verifying, and deleting vaults. The input data is assumed to be a RDF representation of the PII. By default, the tool loads attributes based on the [Person](https://schema.org/Person) schema with [email](https://schema.org/email)as the root of the attribute graph.
 
 ## Basic features
 
-Based on an input .json file with one or more PII definitions, users of this tool may operate in one of four modes:
+Based on an input file with one or more PII definitions, users of this tool may operate in one of four modes:
 
 1. **create-vaults**: Create a vault for each user, based on a hash of the email address
 2. **load-attributes**: Load attributes into the vault, based on the Person schema
@@ -17,21 +17,26 @@ Based on an input .json file with one or more PII definitions, users of this too
 
 ### Prerequisites
 
-- JRE
+- A Java Runtime Environment (JRE)
 
+A binary release of the latest version can be downloaded here:
 ``` shell
 sudo wget https://github.com/manetu/data-loader/releases/download/v1.0.0/manetu-data-loader -O /usr/local/bin/manetu-data-loader
 sudo chmod +x /usr/local/bin/manetu-data-loader
 ```
-
+On MacOS you may need to remove the quarantine attribute
+```
+sudo xattr -r -d com.apple.quarantine /usr/local/bin/manetu-data-loader
+```
 ## Building
 
 ### Prerequisites
 
 In addition to the requirements for installation, you will also need:
 
-- Leiningen
+- The clojure build tool `leiningen`
 
+The to build:
 ```
 $ make
 ```
@@ -40,49 +45,51 @@ $ make
 
 ### Overview
 
-```
-$ ./target/manetu-data-loader -h
-manetu-data-loader version: vX.Y.Z
+``` shell
+$ manetu-data-loader -h
+manetu-data-loader version: v<M.m.s>
 
-Usage: manetu-data-loader [options] <file.json>
+Usage: manetu-data-loader [options] <input-file>
 
 Options:
   -h, --help
-  -v, --version                                                  Print the version and exit
-  -u, --url URL                                                  The connection URL
-  -i, --insecure           false                                 Disable TLS checks (dev only)
-      --[no-]progress      true                                  Enable/disable progress output (default: enabled)
-  -r, --realm REALM        manetu.com                            The realm ID
-  -t, --token TOKEN                                              A personal access token (GraphQL Only)
-      --userid USERID                                            The id of the user to login with (GRPC Only)
-  -p, --password PASSWORD                                        The password of the user (GRPC Only)
-  -l, --log-level LEVEL    :info                                 Select the logging verbosity level from: [trace, debug, info, error]
-      --fatal-errors       false                                 Any sub-operation failure is considered to be an application level failure
-      --verbose-errors     false                                 Any sub-operation failure is logged as ERROR instead of TRACE
-      --type TYPE          data-loader                           The type of data source this CLI represents
-      --id ID              535CC6FC-EAF7-4CF3-BA97-24B2406674A7  The id of the data-source this CLI represents
-      --class CLASS        global                                The schemaClass of the data-source this CLI represents
-  -c, --concurrency NUM    16                                    The number of parallel requests to issue
-  -m, --mode MODE          :load-attributes                      Select the mode from: [query-attributes, load-attributes, onboard, delete-vaults, delete-attributes, create-vaults]
-  -d, --driver DRIVER      :graphql                              Select the driver from: [graphql, grpc]
+  -v, --version                                                Print version info and exit
+  -u, --url URL                                                The connection URL
+  -i, --insecure         false                                 Disable TLS checks
+      --[no-]progress    true                                  Enable/disable progress output
+  -t, --token TOKEN                                            A manetu personal access token
+  -l, --log-level LEVEL  :info                                 Select the logging verbosity level from: [trace, debug, info, error]
+      --fatal-errors     false                                 Any sub-operation failure is considered to be an application level failure
+      --verbose-errors   false                                 Any sub-operation failure is logged as ERROR instead of TRACE
+  -c, --concurrency NUM  16                                    The number of parallel requests to issue
+  -m, --mode MODE        :load-attributes                      Select the mode from: [query-attributes, load-attributes, onboard, delete-vaults, delete-attributes, create-vaults]
+  -d, --driver DRIVER    :graphql                              Select the driver from: [graphql]
+      --id ID            535CC6FC-EAF7-4CF3-BA97-24B2406674A7  The RDF id to be applied the data-source
+      --type TYPE        data-loader                           the RDF type of the data source
+      --class CLASS      global                                The RDF schemaClass applied to the data source
 
-The parameters '--url --provider --userid --password' are all related to the caller's context and the environment they are targetting.
+```
+The `<input-file>` input parameter is a json or csv file containing the data to load. Each row in  `<input-file>` will create a parallel request to the server up to the maximum as specified by the
+`--concurrency` options (default: 16).  The system will measure the time taken for each request and report the status of each response.
 
-'--mode' and the <file.json> input relate to the operation that the tool will perform.
+The option: `--url` specifies the target manetu platform,
 
-Each row in the <file.json> will create parallel request to the server.  The system will measure time and report the status of each response.
+The option: `--token` is a Manetu Personal Access Token which authenticates to the target realm on your Manetu Platform instance
 
-### Example
+The option: `--mode` selects the operation that the tool will perform.
 
-Set a Personal Access Token to the environment variable MANETU_TOKEN, and then:
+The options: `--id`, `--type`, and `--class` allow you to modify parameters of the RDF created from the input data. They are typically not used. For further information reach out to Manetu.
+### Examples
 
+Set value of the environment variable MANETU_TOKEN to a string containing a Personal Access Token for a user on your Manetu Platform deployment. 
 ##### Create vaults for Users
 
 ```
-$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN --realm myrealm -m create-vaults sample-data/mock-data-100.json
+$ ./target/manetu-data-loader --url https://manetu.instance --token $MANETU_TOKEN --mode create-vaults sample-data/mock-data-100.json
 ```
-
 ##### Load attributes for Users
 
 ```
-$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN --realm myrealm -m load-attributes sample-data/mock-data-100.json
+$ ./target/manetu-data-loader --url https://your.manetu.instance --token $MANETU_TOKEN --mode load-attributes sample-data/mock-data-100.json
+```
+
