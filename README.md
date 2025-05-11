@@ -40,37 +40,36 @@ $ make
 
 ### Overview
 
-```
+``` shell
 $ ./target/manetu-data-loader -h
 manetu-data-loader version: vX.Y.Z
 
-Usage: manetu-data-loader [options] <file.json>
+Usage: manetu-data-loader [options] <input-file>
 
 Options:
   -h, --help
-  -v, --version                                                  Print the version and exit
-  -u, --url URL                                                  The connection URL
-  -i, --insecure           false                                 Disable TLS checks (dev only)
-      --[no-]progress      true                                  Enable/disable progress output (default: enabled)
-  -r, --realm REALM        manetu.com                            The realm ID
-  -t, --token TOKEN                                              A personal access token (GraphQL Only)
-      --userid USERID                                            The id of the user to login with (GRPC Only)
-  -p, --password PASSWORD                                        The password of the user (GRPC Only)
-  -l, --log-level LEVEL    :info                                 Select the logging verbosity level from: [trace, debug, info, error]
-      --fatal-errors       false                                 Any sub-operation failure is considered to be an application level failure
-      --verbose-errors     false                                 Any sub-operation failure is logged as ERROR instead of TRACE
-      --type TYPE          data-loader                           The type of data source this CLI represents
-      --id ID              535CC6FC-EAF7-4CF3-BA97-24B2406674A7  The id of the data-source this CLI represents
-      --class CLASS        global                                The schemaClass of the data-source this CLI represents
-  -c, --concurrency NUM    16                                    The number of parallel requests to issue
-  -m, --mode MODE          :load-attributes                      Select the mode from: [query-attributes, load-attributes, onboard, delete-vaults, delete-attributes, create-vaults]
-  -d, --driver DRIVER      :graphql                              Select the driver from: [graphql, grpc]
+  -v, --version                                                Print version info and exit
+  -u, --url URL                                                The connection URL
+  -i, --insecure         false                                 Disable TLS checks
+      --[no-]progress    true                                  Enable/disable progress output
+  -t, --token TOKEN                                            A manetu personal access token
+  -l, --log-level LEVEL  :info                                 Select the logging verbosity level from: [trace, debug, info, error]
+      --fatal-errors     false                                 Any sub-operation failure is considered to be an application level failure
+      --verbose-errors   false                                 Any sub-operation failure is logged as ERROR instead of TRACE
+  -c, --concurrency NUM  16                                    The number of parallel requests to issue
+  -m, --mode MODE        :load-attributes                      Select the mode from: [query-attributes, load-attributes, onboard, delete-vaults, delete-attributes, create-vaults]
+  -d, --driver DRIVER    :graphql                              Select the driver from: [graphql]
+      --id ID            535CC6FC-EAF7-4CF3-BA97-24B2406674A7  The RDF id to be applied the data-source
+      --type TYPE        data-loader                           the RDF type of the data source
+      --class CLASS      global                                The RDF schemaClass applied to the data source
 
-The parameters '--url --provider --userid --password' are all related to the caller's context and the environment they are targetting.
+```
 
-'--mode' and the <file.json> input relate to the operation that the tool will perform.
+The options '--url --provider --userid --password' are all related to the caller's context and the environment they are targeting.
 
-Each row in the <file.json> will create parallel request to the server.  The system will measure time and report the status of each response.
+the '--mode' option and the <file.json> input parameter control the operation that the tool will perform.
+
+Each row in the <input-file> will create a parallel request to the server.  The system will measure time and report the status of each response.
 
 ### Example
 
@@ -79,10 +78,10 @@ Set a Personal Access Token to the environment variable MANETU_TOKEN, and then:
 ##### Create vaults for Users
 
 ```
-$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN --realm myrealm -m create-vaults sample-data/mock-data-100.json
+$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN -m create-vaults sample-data/mock-data-100.json
 ```
 
 ##### Load attributes for Users
 
 ```
-$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN --realm myrealm -m load-attributes sample-data/mock-data-100.json
+$ ./target/manetu-data-loader -u https://manetu.instance --token $MANETU_TOKEN -m load-attributes sample-data/mock-data-100.json
