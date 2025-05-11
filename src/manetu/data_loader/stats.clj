@@ -1,6 +1,7 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.stats
+  (:refer-clojure :exclude [count])
   (:require [kixi.stats.core :refer [count mean standard-deviation histogram post-complete]]
             [kixi.stats.distribution :refer [minimum maximum quantile]]
             [redux.core :refer [fuse]]))
