@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/manetu/data-loader/tree/master.svg?style=svg)](https://circleci.com/gh/manetu/data-loader/tree/master)
 
-The Manetu data-loader is a command-line tool to validate and load attribute data onto the Manetu Platform. The tool is designed to run "at scale" such that it can put significant load on a Manetu Plaftorm for performance testing. Data-loader takes a set of Personally Identifiable Information (PII) in JSON or CSV format and executes a selected operation using this data, such as onboarding, verifying, and deleting vaults. The input data is assumed to be a RDF representation of the PII. By default, the tool loads attributes based on the [Person](https://schema.org/Person) schema with [email](https://schema.org/email)as the root of the attribute graph.
+The Manetu data-loader is a command-line tool to validate and load attribute data onto the Manetu Platform. The tool is designed to run "at scale" such that it can put significant load on a Manetu Plaftorm for performance testing. Data-loader takes a set of Personally Identifiable Information (PII) in JSON or CSV format and executes a selected operation using this data, such as onboarding, verifying, and deleting vaults. The input data is assumed to be a RDF representation of the PII. By default, the tool loads attributes based on the [Person](https://schema.org/Person) schema with [email](https://schema.org/email) as the root of the attribute graph.
 
 ## Basic features
 
@@ -21,7 +21,7 @@ Based on an input file with one or more PII definitions, users of this tool may 
 
 A binary release of the latest version can be downloaded here:
 ``` shell
-sudo wget https://github.com/manetu/data-loader/releases/download/v1.0.0/manetu-data-loader -O /usr/local/bin/manetu-data-loader
+sudo wget https://github.com/manetu/data-loader/releases/download/v2.0.0/manetu-data-loader -O /usr/local/bin/manetu-data-loader
 sudo chmod +x /usr/local/bin/manetu-data-loader
 ```
 On MacOS you may need to remove the quarantine attribute
@@ -36,7 +36,7 @@ In addition to the requirements for installation, you will also need:
 
 - The clojure build tool `leiningen`
 
-The to build:
+Then, to build:
 ```
 $ make
 ```
