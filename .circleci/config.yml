@@ -12,7 +12,7 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:lein-2.9.5
+      - image: cimg/clojure:1.12.0-openjdk-21.0
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images

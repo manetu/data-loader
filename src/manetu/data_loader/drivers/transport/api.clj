@@ -1,8 +1,8 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
-(ns manetu.data-loader.driver.api)
+(ns manetu.data-loader.drivers.transport.api)
 
-(defprotocol Driver
+(defprotocol TransportDriver
   (create-vault [this record])
   (delete-vault [this record])
   (load-attributes [this record])

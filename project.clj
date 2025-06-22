@@ -1,4 +1,4 @@
-(defproject manetu/data-loader "2.0.1-SNAPSHOT"
+(defproject manetu/data-loader "3.0.0-SNAPSHOT"
   :description "A utility to load and verify data on the Manetu Platform"
   :url "https://github.com/manetu/data-loader"
   :plugins [[lein-cljfmt "0.9.0"]
@@ -31,7 +31,10 @@
                  [slingshot "0.12.2"]
                  [district0x/graphql-query "1.0.6"]
                  [http-kit/http-kit "2.7.0"]
-                 [environ "1.2.0"]]
+                 [environ "1.2.0"]
+                 [dev.langchain4j/langchain4j "1.0.1"]
+                 [dev.langchain4j/langchain4j-ollama "1.0.1-beta6"]
+                 [clj-commons/clj-yaml "1.0.29"]]
   :main ^:skip-aot manetu.data-loader.main
   :target-path "target/%s"
   :uberjar-name "app.jar"
