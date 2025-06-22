@@ -4,9 +4,10 @@
   (:require [clojure.tools.cli :refer [parse-opts]]
             [clojure.string :as string]
             [taoensso.timbre :as log]
-            [manetu.data-loader.core :as core]
+            [slingshot.slingshot :refer [throw+ try+]]
             [manetu.data-loader.commands :as commands]
-            [manetu.data-loader.driver.core :as driver.core])
+            [manetu.data-loader.utils :refer [prep-usage tool-name usage-preamble
+                                              help-exit error-exit exit version] :as utils])
   (:gen-class))
 
 (defn set-logging
@@ -28,22 +29,17 @@
 (def loglevel-description
   (str "Select the logging verbosity level from: " (print-loglevels)))
 
-(def drivers (into #{} (keys driver.core/driver-map)))
-(defn print-drivers []
-  (str "[" (string/join ", " (map name drivers)) "]"))
-(def driver-description
-  (str "Select the driver from: " (print-drivers)))
+;; (def drivers (into #{} (keys driver.core/driver-map)))
+;; (defn print-drivers []
+;;   (str "[" (string/join ", " (map name drivers)) "]"))
+;; (def driver-description
+;;   (str "Select the driver from: " (print-drivers)))
 
-(def modes (into #{} (keys commands/command-map)))
-(defn print-modes []
-  (str "[" (string/join ", " (map name modes)) "]"))
-(def mode-description
-  (str "Select the mode from: " (print-modes)))
-
-(def options
+(def options-spec
   [["-h" "--help"]
    ["-v" "--version" "Print version info and exit"]
-   ["-u" "--url URL" "The connection URL"]
+   ["-u" "--url URL" "The URL to a Manetu instance"
+    :default "https://localhost"]
    ["-i" "--insecure" "Disable TLS checks"
     :default false]
    [nil "--[no-]progress" "Enable/disable progress output"
@@ -61,66 +57,59 @@
     :default 16
     :parse-fn #(Integer/parseInt %)
     :validate [pos? "Must be a positive integer"]]
-   ["-m" "--mode MODE" mode-description
-    :default :load-attributes
-    :parse-fn keyword
-    :validate [modes (str "Must be one of " (print-modes))]]
-   ["-d" "--driver DRIVER" driver-description
-    :default :graphql
-    :parse-fn keyword
-    :validate [drivers (str "Must be one of " (print-drivers))]]
-   [nil "--id ID" "The RDF id to be applied the data source"
-    :default "535CC6FC-EAF7-4CF3-BA97-24B2406674A7"]
-   [nil "--type TYPE" "the RDF type of the data source"
-    :default "data-loader"]
-   [nil "--class CLASS" "The RDF schemaClass applied to the data source"
-    :default "global"]])
-
-(defn exit [status msg & args]
-  (do
-    (apply println msg args)
-    status))
-
-(defn version [] (str "manetu-data-loader version: v" (System/getProperty "data-loader.version")))
-
-(defn prep-usage [msg] (->> msg flatten (string/join \newline)))
+   ["-f" "--input-file FILE" "The input file of records in CSV or JSON format"
+    :default "input.csv"]
+   ;; ["-t" "--transport DRIVER" driver-description   FIXME - we currently only have :graphql, so we should remove this
+   ;;  :default :graphql
+   ;;  :parse-fn keyword
+   ;;  :validate [drivers (str "Must be one of " (print-drivers))]]
+   ])
 
 (defn usage [options-summary]
-  (prep-usage [(version)
-               ""
-               "Usage: manetu-data-loader [options] <input-file>"
-               ""
-               "Options:"
-               options-summary]))
+  (prep-usage (-> [(str usage-preamble " subcommand [subcommand-options]")
+                   ""
+                   "Subcommands:"]
+                  (concat
+                   (commands/render-description))
+                  (concat
+                   [""
+                    "Global Options:"
+                    options-summary
+                    ""
+                    (str "Use '" tool-name " <subcommand> -h' for subcommand specific help")]))))
 
 (defn -app
   [& args]
-  (let [{{:keys [help log-level url token] :as options} :options :keys
-         [arguments errors summary]} (parse-opts args options)]
-    (cond
+  (let [{{:keys [help log-level url token] :as global-options} :options
+         global-summary :summary
+         :keys [arguments errors]}
+        (parse-opts args options-spec :in-order true)
+        subcommand (first arguments)
+        usage-summary (usage global-summary)]
+    (try+
+     (cond
 
-      help
-      (exit 0 (usage summary))
+       help
+       (help-exit usage-summary)
 
-      (not= errors nil)
-      (exit -1 "Error: " (string/join errors))
+       (not= errors nil)
+       (error-exit (string/join errors) usage-summary)
 
-      (:version options)
-      (exit 0 (version))
+       (:version global-options)
+       (exit 0 (version))
 
-      (string/blank? url)
-      (exit -1 "--url required")
+       (string/blank? subcommand)
+       (error-exit "subcommand required" usage-summary)
 
-      (string/blank? token)
-      (exit -1 "--token required")
-
-      (zero? (count arguments))
-      (exit -1 (usage summary))
-
-      :else
-      (do
-        (set-logging log-level)
-        (core/exec options (first arguments))))))
+       :else
+       (do
+         (set-logging log-level)
+         (if-let [exec-fn (commands/get-handler subcommand)]
+           (exec-fn global-summary (assoc global-options :transport :graphql) arguments)
+           (error-exit (str "unknown subcommand: \"" subcommand "\"") (usage global-summary)))))
+     (catch [:type ::utils/exit] {:keys [status msg]}
+       (println msg)
+       status))))
 
 (defn -main
   [& args]

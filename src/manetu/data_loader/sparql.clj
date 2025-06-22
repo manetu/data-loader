@@ -1,7 +1,8 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.sparql
-  (:require [clostache.parser :as clostache]))
+  (:require [taoensso.timbre :as log]
+            [clostache.parser :as clostache]))
 
 (def update-template
   "
@@ -10,6 +11,7 @@
    PREFIX person: <http://www.w3.org/ns/person#>
    PREFIX manetu: <http://manetu.com/manetu/>
    PREFIX vid:    <http://manetu.io/rdf/vaultid/0.1/>
+   PREFIX mtypes: <http://manetu.io/rdf/types#>
 
    INSERT
    {
@@ -53,8 +55,11 @@
    {
           ?p   rdfs:Class person:Person .
           {{#attributes}}
-          ?p {{{name}}} {{{value}}} .
+          ?p   {{{name}}} {{{value}}} .
           {{/attributes}}
+          {{#embedding}}
+          ?p   person:embedding \"{{ embedding }}\"^^mtypes:float-vector .
+          {{/embedding}}
    }
    WHERE
    {
@@ -99,5 +104,13 @@
 (defn field-> [[k v]] {:name (str "person:" (name k)) :value (str "\"" v "\"")})
 
 (defn convert
-  [{:keys [type id class] :as options} {:keys [Email] :as record}]
-  (clostache/render update-template {:type type :id id :class class :email Email :attributes (map field-> record)}))
+  [{:keys [type id class] :as options} {:keys [Email embedding] :as record}]
+  (let [record (dissoc record :embedding)
+        r (clostache/render update-template {:type type
+                                             :id id
+                                             :class class
+                                             :email Email
+                                             :embedding embedding
+                                             :attributes (map field-> record)})]
+    (log/debug "SPARQL:" r)
+    r))

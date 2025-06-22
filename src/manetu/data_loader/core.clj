@@ -1,24 +1,20 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.core
-  (:require [medley.core :as m]
+  (:require [clojure.string :as string]
+            [clojure.tools.cli :refer [parse-opts]]
+            [clojure.core.async :refer [>!! <! <!! go go-loop] :as async]
+            [medley.core :as m]
             [promesa.core :as p]
             [taoensso.timbre :as log]
-            [clojure.core.async :refer [>!! <! <!! go go-loop] :as async]
             [progrock.core :as pr]
             [doric.core :refer [table]]
             [kixi.stats.core :as kixi]
-            [manetu.data-loader.commands :as commands]
             [manetu.data-loader.loader :as loader]
             [manetu.data-loader.time :as t]
-            [manetu.data-loader.driver.core :as driver.core]
-            [manetu.data-loader.stats :as stats]))
-
-(defn promise-put!
-  [port val]
-  (p/create
-   (fn [resolve reject]
-     (async/put! port val resolve))))
+            [manetu.data-loader.drivers.transport.core :as driver.core]
+            [manetu.data-loader.stats :as stats]
+            [manetu.data-loader.utils :refer [subcommand-usage help-exit error-exit] :as utils]))
 
 (defn execute-command
   [{:keys [verbose-errors]} f {{:keys [Email]} :data :as record}]
@@ -125,16 +121,17 @@
     -1
     0))
 
-(defn exec
-  [{:keys [mode concurrency] :as options} path]
-  (let [{:keys [n] :as records} (loader/load-records path)
+(defn- exec!
+  [usage-summary {:keys [input-file concurrency] :as options} factory-fn]
+  {:pre [(utils/verify-global-options usage-summary options)]}
+  (let [{:keys [n] :as records} (loader/load-records input-file)
         output-ch (async/chan (* 4 concurrency))]
     (log/debug "processing" n "records with options:" options)
     @(-> (driver.core/create options)
          (p/then
-          (fn [driver]
+          (fn [transport-driver]
             (let [mux (async/mult output-ch)
-                  f (commands/get-handler mode driver)]
+                  f (factory-fn options transport-driver)]
               (p/all [(t/now)
                       (execute-commands options f output-ch (:ch records))
                       (show-progress options n mux)
@@ -149,3 +146,22 @@
           (fn [e]
             (log/error "Exception detected:" (ex-message e))
             -1)))))
+
+(defn exec
+  [{:keys [command description options-spec validation-fn factory-fn] :or {validation-fn (constantly true)}}
+   global-summary global-options args]
+  (let [{{:keys [help] :as local-options} :options
+         :keys [errors summary]} (parse-opts args options-spec)
+        summary (subcommand-usage command description global-summary summary)]
+    (cond
+
+      help
+      (help-exit summary)
+
+      (not= errors nil)
+      (error-exit (string/join errors) summary)
+
+      :else
+      (let [options (merge global-options local-options)]
+        (validation-fn options)
+        (exec! summary options factory-fn)))))

@@ -1,40 +1,27 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.data-loader.commands
-  (:require [promesa.core :as p]
-            [manetu.data-loader.driver.api :as driver.api]))
-
-(defn init-create-vault [driver]
-  (partial driver.api/create-vault driver))
-
-(defn init-delete-vault [driver]
-  (partial driver.api/delete-vault driver))
-
-(defn init-load-attributes [driver]
-  (partial driver.api/load-attributes driver))
-
-(defn init-onboard [driver]
-  (fn [record]
-    (-> (driver.api/create-vault driver record)
-        (p/then (fn [_]
-                  (driver.api/load-attributes driver record))))))
-
-(defn init-delete-attributes [driver]
-  (partial driver.api/delete-attributes driver))
-
-(defn init-query-attributes [driver]
-  (partial driver.api/query-attributes driver))
+  (:require [clojure.pprint :refer [cl-format]]
+            [manetu.data-loader.commands.create-vaults :as create-vaults]
+            [manetu.data-loader.commands.delete-vaults :as delete-vaults]
+            [manetu.data-loader.commands.attributes.update.load :as load-attributes]
+            [manetu.data-loader.commands.attributes.update.onboard :as onboard]
+            [manetu.data-loader.commands.attributes.delete :as delete-attributes]
+            [manetu.data-loader.commands.attributes.query :as query-attributes]))
 
 (def command-map
-  {:create-vaults     init-create-vault
-   :delete-vaults     init-delete-vault
-   :load-attributes   init-load-attributes
-   :onboard           init-onboard
-   :delete-attributes init-delete-attributes
-   :query-attributes  init-query-attributes})
+  {create-vaults/command       create-vaults/spec
+   delete-vaults/command       delete-vaults/spec
+   load-attributes/command     load-attributes/spec
+   onboard/command             onboard/spec
+   delete-attributes/command   delete-attributes/spec
+   query-attributes/command    query-attributes/spec})
 
 (defn get-handler
-  [mode driver]
-  (if-let [init-fn (get command-map mode)]
-    (init-fn driver)
-    (throw (ex-info "bad mode" mode))))
+  [subcommand]
+  (some-> (get command-map subcommand) :fn))
+
+(defn render-description []
+  (mapv (fn [[command {:keys [description]}]]
+          (cl-format nil (str " - " command ": ~24T" description)))
+        command-map))
