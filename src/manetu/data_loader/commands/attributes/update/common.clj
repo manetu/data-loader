@@ -22,6 +22,9 @@
     :default "http://localhost:11434"]
    [nil "--ollama-model" "The ollama model.  Only valid with '--vector-provider ollama'"
     :default "llama3.2"]
+   [nil "--random-dim DIM" "The dimension of the random vectors generated with '--vector-provider random'"
+    :default 3072
+    :parse-fn parse-long]
    [nil "--id ID" "The RDF id to be applied the data source"
     :default "535CC6FC-EAF7-4CF3-BA97-24B2406674A7"]
    [nil "--type TYPE" "the RDF type of the data source"
