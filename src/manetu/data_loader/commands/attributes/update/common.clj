@@ -18,9 +18,9 @@
    ["-v" "--vector-provider DRIVER" driver-description
     :default "null"
     :validate [drivers (str "Must be one of " (print-drivers))]]
-   [nil "--ollama-url" "The URL to an ollama instance.  Only valid with '--vector-provider ollama'"
+   [nil "--ollama-url URL" "The URL to an ollama instance.  Only valid with '--vector-provider ollama'"
     :default "http://localhost:11434"]
-   [nil "--ollama-model" "The ollama model.  Only valid with '--vector-provider ollama'"
+   [nil "--ollama-model MODEL" "The ollama model.  Only valid with '--vector-provider ollama'"
     :default "llama3.2"]
    [nil "--random-dim DIM" "The dimension of the random vectors generated with '--vector-provider random'"
     :default 3072
